@@ -1,17 +1,27 @@
+import io.gitlab.arturbosch.detekt.Detekt
+import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.androidKotlinMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.detekt)
 }
 
 kotlin {
-    androidTarget {
+    androidLibrary {
+        namespace = "com.darioossa.myspa.app"
+        compileSdk = libs.versions.android.compileSdk.get().toInt()
+
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
+        }
+
+        androidResources {
+            enable = true
         }
     }
     
@@ -37,10 +47,6 @@ kotlin {
     }
     
     sourceSets {
-        androidMain.dependencies {
-            implementation(compose.preview)
-            implementation(libs.androidx.activity.compose)
-        }
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -58,34 +64,44 @@ kotlin {
     }
 }
 
-android {
-    namespace = "com.darioossa.myspa"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+detekt {
+    toolVersion = libs.versions.detekt.get()
+    buildUponDefaultConfig = true // preconfigure defaults
+    allRules = false // activate all available (even unstable) rules.
+    config.setFrom("$projectDir/config/detekt.yml") // point to your custom config defining rules to run, overwriting default behavior
+    baseline = file("$projectDir/config/baseline.xml") // a way of suppressing issues before introducing detekt
+    source.setFrom(
+        files(
+            "src/commonMain/kotlin",
+            "src/commonTest/kotlin",
+            "src/jvmMain/kotlin",
+            "src/jvmTest/kotlin",
+            "src/jsMain/kotlin",
+            "src/jsTest/kotlin",
+            "src/iosMain/kotlin",
+            "src/iosTest/kotlin",
+            "src/wasmJsMain/kotlin",
+            "src/wasmJsTest/kotlin",
+            "src/androidMain/kotlin",
+            "src/androidUnitTest/kotlin",
+            "src/androidInstrumentedTest/kotlin",
+            "src/desktopMain/kotlin",
+            "src/desktopTest/kotlin",
+        )
+    )
+}
 
-    defaultConfig {
-        applicationId = "com.darioossa.myspa"
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0"
-    }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-    buildTypes {
-        getByName("release") {
-            isMinifyEnabled = false
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+tasks.withType<Detekt>().configureEach {
+    reports {
+        html.required.set(true) // observe findings in your browser with structure and code snippets
+        sarif.required.set(true) // standardized SARIF format (https://sarifweb.azurewebsites.net/) to support integrations with GitHub Code Scanning
     }
 }
 
-dependencies {
-    debugImplementation(compose.uiTooling)
+tasks.withType<Detekt>().configureEach {
+    jvmTarget = "1.8"
+}
+tasks.withType<DetektCreateBaselineTask>().configureEach {
+    jvmTarget = "1.8"
 }
 
