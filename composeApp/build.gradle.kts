@@ -105,3 +105,6 @@ tasks.withType<DetektCreateBaselineTask>().configureEach {
     jvmTarget = "1.8"
 }
 
+tasks.build {
+    dependsOn(tasks.check)
+}

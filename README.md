@@ -1,66 +1,192 @@
-# spa_app
-Spa test application using Kotlin Multiplatform, TDD, SDD, SOLID principles, and other technologies.
+# MySpa
 
-This is a Kotlin Multiplatform project targeting Android, iOS, and Web.
+MySpa is a Kotlin Multiplatform application designed to grow under TDD, SDD, SOLID, Clean Architecture, and the repository pattern. The codebase is intended to maximize shared business and presentation logic across Android, iOS, Web, and desktop where feasible.
 
-* [/composeApp](./composeApp/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./composeApp/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./composeApp/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./composeApp/src/jvmMain/kotlin)
-    folder is the appropriate location.
+The repository currently includes active Android, iOS, and Web targets. Desktop is not configured yet, but shared code should continue to be written so a desktop target can be added with minimal refactoring.
 
-* [/iosApp](./iosApp/iosApp) contains iOS applications. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
+## Goals
 
-### Build and Run Android Application
+- Keep business rules platform-agnostic.
+- Share as much code as possible across targets.
+- Prefer explicit boundaries over convenience coupling.
+- Drive non-trivial behavior through tests and scenarios.
+- Preserve Web compatibility and future desktop viability when writing shared code.
 
-To build and run the development version of the Android app, use the run configuration from the run widget
-in your IDE’s toolbar or build it directly from the terminal:
-- on macOS/Linux
-  ```shell
-  ./gradlew :composeApp:assembleDebug
-  ```
-- on Windows
-  ```shell
-  .\gradlew.bat :composeApp:assembleDebug
-  ```
+## Tech direction
 
-### Build and Run Web Application
+- Kotlin Multiplatform
+- Compose Multiplatform
+- Clean Architecture
+- Repository pattern
+- MVI-style presentation primitives
+- TDD and SDD
+- SOLID design principles
+- Static analysis with Detekt
 
-To build and run the development version of the web app, use the run configuration from the run widget
-in your IDE's toolbar or run it directly from the terminal:
-- for the Wasm target (faster, modern browsers):
-  - on macOS/Linux
-    ```shell
-    ./gradlew :composeApp:wasmJsBrowserDevelopmentRun
-    ```
-  - on Windows
-    ```shell
-    .\gradlew.bat :composeApp:wasmJsBrowserDevelopmentRun
-    ```
-- for the JS target (slower, supports older browsers):
-  - on macOS/Linux
-    ```shell
-    ./gradlew :composeApp:jsBrowserDevelopmentRun
-    ```
-  - on Windows
-    ```shell
-    .\gradlew.bat :composeApp:jsBrowserDevelopmentRun
-    ```
+## Current repository structure
 
-### Build and Run iOS Application
+- `composeApp/`
+  Shared Compose UI, shared presentation code, Compose resources, and Web/iOS entry points.
+- `core/`
+  Shared architectural primitives. Today it contains the base reducer contract and base MVI view model.
+- `androidApp/`
+  Android host application that boots the shared Compose UI.
+- `iosApp/`
+  Native iOS host application and Xcode project that embeds the shared Compose UI.
+- `config/`
+  Shared repository configuration, currently including Detekt rules.
+- `gradle/`
+  Gradle wrapper and version catalog.
 
-To build and run the development version of the iOS app, use the run configuration from the run widget
-in your IDE’s toolbar or open the [/iosApp](./iosApp) directory in Xcode and run it from there.
+## Current implementation status
 
----
+The project is still early-stage. At the moment the repository contains:
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html),
-[Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform/#compose-multiplatform),
-[Kotlin/Wasm](https://kotl.in/wasm/)…
+- a shared onboarding-style Compose screen
+- a reusable MVI foundation in `core`
+- Android and iOS host shells
+- Web support through JS and Wasm browser targets
 
-We would appreciate your feedback on Compose/Web and Kotlin/Wasm in the public Slack channel [#compose-web](https://slack-chats.kotlinlang.org/c/compose-web).
-If you face any issues, please report them on [YouTrack](https://youtrack.jetbrains.com/newIssue?project=CMP).
+The repository does not yet include:
+
+- feature-specific domain modules
+- repository implementations
+- remote or local data sources
+- dependency injection wiring
+- navigation flows
+- a configured desktop target
+
+## Architecture expectations
+
+Feature work should evolve toward these conceptual layers:
+
+1. `domain`
+   Pure business logic, entities, value objects, use cases, and repository contracts.
+2. `data`
+   Repository implementations, DTOs, mappers, persistence, networking, and infrastructure concerns.
+3. `presentation`
+   Reducers, UI state, intents/events, view models, UI models, and Compose screens.
+4. `platform`
+   Android, iOS, Web, and desktop bootstrapping plus platform-specific adapters.
+
+Dependency direction must point inward. Domain must not depend on UI or platform code. Presentation must not own infrastructure. Platform code should adapt shared code, not replace it.
+
+## Platform support
+
+- Android
+  First-class target through `androidApp`.
+- iOS
+  First-class target through `iosApp` and the shared `ComposeApp` framework.
+- Web
+  Supported through JS and Wasm browser targets in `composeApp`.
+- Desktop
+  Not configured yet. Shared code should remain desktop-friendly where practical.
+
+Desktop support should be described as a design goal, not as a shipping target, until the Gradle target and host app are actually added.
+
+## Source set guidance
+
+- Use `commonMain` by default for shared logic.
+- Use `commonTest` for shared tests.
+- Add platform-specific code only when a platform API is required.
+- Hide platform dependencies behind interfaces or small adapters.
+- Avoid Android-only assumptions in shared UI or presentation code.
+
+## Development principles
+
+- Prefer feature code that is easy to test in shared modules.
+- Keep reducers pure and deterministic.
+- Keep Composables focused on rendering and user interaction.
+- Move state transitions and business decisions out of Composables.
+- Prefer constructor injection and boundary abstractions.
+- Do not introduce dependencies into shared code unless they are compatible with multiplatform targets.
+
+## Prerequisites
+
+- JDK 17 or newer compatible with the Android Gradle Plugin used by this repository
+- Android Studio or IntelliJ IDEA with Kotlin Multiplatform support
+- Android SDK installed and available through `local.properties`
+- Xcode on macOS for iOS builds
+
+If Gradle fails locally, verify that `JAVA_HOME` points to a real JDK installation and not to the Android SDK directory.
+
+## Common commands
+
+### Android
+
+Build the Android app:
+
+```bash
+./gradlew :androidApp:assembleDebug
+```
+
+Install the Android debug build:
+
+```bash
+./gradlew :androidApp:installDebug
+```
+
+### Web
+
+Run the Wasm web target:
+
+```bash
+./gradlew :composeApp:wasmJsBrowserDevelopmentRun
+```
+
+Run the JS web target:
+
+```bash
+./gradlew :composeApp:jsBrowserDevelopmentRun
+```
+
+### iOS
+
+Open the iOS host project in Xcode:
+
+```bash
+open iosApp/iosApp.xcodeproj
+```
+
+The Xcode project invokes:
+
+```bash
+./gradlew :composeApp:embedAndSignAppleFrameworkForXcode
+```
+
+### Tests and analysis
+
+Run shared tests:
+
+```bash
+./gradlew :core:allTests :composeApp:allTests
+```
+
+Run Android device tests:
+
+```bash
+./gradlew :core:connectedAndroidTest
+```
+
+Run Detekt:
+
+```bash
+./gradlew :composeApp:detekt
+```
+
+## Recommended workflow
+
+1. Define the scenario and expected behavior.
+2. Add or update tests before or alongside the implementation.
+3. Implement domain and presentation behavior in shared code where possible.
+4. Add platform adapters only when a real platform concern exists.
+5. Run tests and static analysis before merging.
+6. Update documentation when responsibilities, commands, or supported targets change.
+
+## Contribution guidelines
+
+- Keep code compatible with Android, iOS, Web, and future desktop support unless the requirement is intentionally platform-specific.
+- Prefer small feature-oriented packages or modules over generic utility growth.
+- Keep domain names explicit and business-oriented.
+- Replace placeholder tests as real features are introduced.
+- Update this file and `AGENTS.md` when architectural rules or setup expectations change.
