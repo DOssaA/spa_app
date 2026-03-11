@@ -171,7 +171,13 @@ Run Android device tests:
 Run Detekt:
 
 ```bash
-./gradlew :composeApp:detekt
+./gradlew detektAll
+```
+
+Run the standard local verification path used by CI:
+
+```bash
+./gradlew check
 ```
 
 ## Recommended workflow
@@ -189,4 +195,5 @@ Run Detekt:
 - Prefer small feature-oriented packages or modules over generic utility growth.
 - Keep domain names explicit and business-oriented.
 - Replace placeholder tests as real features are introduced.
+- Use `./gradlew check` for full local verification and `./gradlew detektAll` for static analysis only.
 - Update this file and `AGENTS.md` when architectural rules or setup expectations change.

@@ -132,7 +132,13 @@ Run shared tests:
 Run static analysis:
 
 ```bash
-./gradlew :composeApp:detekt
+./gradlew detektAll
+```
+
+Run the same verification path expected in CI:
+
+```bash
+./gradlew check
 ```
 
 ## Agent change policy
@@ -141,6 +147,7 @@ Run static analysis:
 - Do not move domain rules into Composables.
 - Do not introduce platform-specific logic into shared code without an explicit abstraction point.
 - Do not claim repository pattern, Clean Architecture, or desktop support are implemented in a feature unless the code actually reflects that.
+- Prefer `./gradlew check` as the standard local gate and `./gradlew detektAll` as the focused static-analysis task.
 - Prefer incremental, test-backed changes over broad speculative refactors.
 
 ## Feature workflow
