@@ -10,4 +10,5 @@ repositories {
 
 dependencies {
     implementation(libs.detekt.gradle.plugin)
+    implementation(libs.ktlint.gradle.plugin)
 }

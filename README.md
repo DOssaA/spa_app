@@ -174,11 +174,43 @@ Run Detekt:
 ./gradlew detektAll
 ```
 
+Run ktlint:
+
+```bash
+./gradlew ktlintAll
+```
+
+Generate coverage reports:
+
+```bash
+./gradlew koverXmlReport koverHtmlReport
+```
+
 Run the standard local verification path used by CI:
 
 ```bash
 ./gradlew check
 ```
+
+## CI/CD summary
+
+The repository uses GitHub Actions with a low-cost baseline oriented to fast pull request feedback and multiplatform confidence.
+
+- `pr-checks`
+  Runs the mandatory branch gate: `actionlint`, Gradle wrapper validation, shared quality gates, Android lint/build, JS/Wasm build verification, and iOS simulator build verification on `macos-latest`.
+- `ci-main`
+  Runs on main branches and generates coverage reports through `Kover`.
+- `security`
+  Runs low-cost security automation with secret scanning and dependency review where repository features allow it.
+- `dependabot`
+  Keeps Gradle and GitHub Actions dependencies moving through scheduled update PRs.
+
+CI/CD decisions behind this setup:
+
+- Keep the default PR path fast enough to be usable every day.
+- Validate Android, Web, and iOS build health because this is a Kotlin Multiplatform repository, not an Android-only codebase.
+- Prefer open-source or GitHub-native tooling that does not require paid security add-ons by default.
+- Separate PR checks, main-branch reporting, and security automation so failures are easier to reason about and maintain.
 
 ## Recommended workflow
 
@@ -195,5 +227,5 @@ Run the standard local verification path used by CI:
 - Prefer small feature-oriented packages or modules over generic utility growth.
 - Keep domain names explicit and business-oriented.
 - Replace placeholder tests as real features are introduced.
-- Use `./gradlew check` for full local verification and `./gradlew detektAll` for static analysis only.
+- Use `./gradlew check` for full local verification, `./gradlew detektAll` and `./gradlew ktlintAll` for focused static analysis, and `./gradlew koverXmlReport koverHtmlReport` for coverage reports.
 - Update this file and `AGENTS.md` when architectural rules or setup expectations change.

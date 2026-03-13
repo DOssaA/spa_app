@@ -1,6 +1,8 @@
 plugins {
     base
     id("myspa.detekt")
+    id("myspa.ktlint")
+    alias(libs.plugins.kover)
     // this is necessary to avoid the plugins to be loaded multiple times
     // in each subproject's classloader
     alias(libs.plugins.androidApplication) apply false
