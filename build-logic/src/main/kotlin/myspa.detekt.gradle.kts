@@ -1,13 +1,14 @@
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import org.gradle.api.Project
-import org.gradle.api.plugins.catalog.VersionCatalogsExtension
 import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
 
-val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
+plugins {
+    id("io.gitlab.arturbosch.detekt")
+}
+
 val detektJvmTarget = "11"
 val detektConfigFile = rootProject.file("config/detekt.yml")
 val detektBaselineFile = rootProject.file("config/baseline.xml")
@@ -20,7 +21,6 @@ val detektExcludes = listOf(
 
 fun Project.configureDetekt(includePatterns: List<String>) {
     extensions.configure<DetektExtension> {
-        toolVersion = libs.findVersion("detekt").get().requiredVersion
         buildUponDefaultConfig = true
         allRules = false
         config.setFrom(detektConfigFile)
@@ -48,8 +48,6 @@ fun Project.configureDetekt(includePatterns: List<String>) {
         dependsOn(tasks.named("detekt"))
     }
 }
-
-pluginManager.apply("io.gitlab.arturbosch.detekt")
 
 configureDetekt(
     includePatterns = listOf(
